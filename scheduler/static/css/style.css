@@ -1,0 +1,169 @@
+/* General Styles for the Page */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f3f5;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 2rem;
+}
+
+/* Navigation Buttons */
+.nav-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.nav-buttons a {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+.nav-buttons a:hover {
+    background-color: #007bff;
+}
+
+/* Link Buttons for Calendar and Add Appointment */
+.calendar-link, .add-appointment-link, .search-appointments-link {
+    margin: 10px 0;
+    padding: 10px;
+    display: inline-block;
+    background-color: #f1f1f1;
+    border: 2px solid #007bff;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.calendar-link a, .add-appointment-link a, .search-appointments-link a{
+    color: #333;
+    font-size: 16px;
+    padding: 10px 20px;
+    text-decoration: none;
+}
+
+.calendar-link:hover, .add-appointment-link:hover, .search-appointments-link:hover {
+    background-color: #e1e1e1;
+}
+
+/* Table for Appointments */
+.schedule-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.schedule-table th, .schedule-table td {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #ddd;
+    position: relative;  /* Important for positioning */
+}
+
+.schedule-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.schedule-table td {
+    background-color: #fff;
+    height: 50px; /* Base height for 1-hour slots */
+    position: relative;
+    vertical-align: top; /* Ensures content starts from the top */
+}
+
+.schedule-table td:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.schedule-table th:first-child, .schedule-table td:first-child {
+    width: 100px;  /* Set a fixed width for the Time column */
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .schedule-table {
+        font-size: 14px;
+    }
+
+    .nav-buttons a, .calendar-link, .add-appointment-link, .search-appointments-link {
+        font-size: 14px;
+    }
+}
+
+.no-appointment-block {
+    font-size: 14px;
+    height: 10px;  /* Try setting a smaller height */
+    line-height: 5px;  /* Align text vertically */
+    text-align: center;
+    background-color: #eae9e9 !important;
+}
+
+.appointment-box {
+    position: absolute;
+    top: 0; /* Ensure it starts at the top */
+    left: 5%;
+    width: 90%;
+    height: 100%; /* Forces it to fit within the full row */
+    background-color: #007bff !important;
+    border-radius: 8px;
+    padding: 5px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 5px rgba(249, 248, 248, 0.2) !important;
+    border: 1px solid #ccc !important;
+    overflow: hidden;
+    padding: 20px 8px !important; /* Adds vertical (top/bottom) and horizontal (left/right) padding */
+    line-height: 1.4;
+}
+
+/* Ensure table cells grow dynamically */
+.schedule-table td {
+    position: relative;
+    height: 50px; /* Default 1-hour slot */
+    min-height: 50px;
+}
+
+/* If rowspanning is used, ensure correct height */
+.schedule-table td[rowspan] {
+    height: calc(50px * attr(rowspan integer, 1)); /* Expands for multi-hour appts */
+}
+
+
+.search-appointments-link {
+    margin: 10px 0;
+    padding: 10px;
+    display: inline-block;
+    background-color: #f1f1f1;
+    border: 2px solid #007bff;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.search-appointments-link a {
+    color: #333;
+    font-size: 16px;
+    padding: 10px 20px;
+    text-decoration: none;
+}
+
+.search-appointments-link:hover {
+    background-color: #e1e1e1;
+}

@@ -1,0 +1,36 @@
+{% extends "scheduler/base.html" %}
+{% block content %}
+<h2>Search Date</h2>
+
+<form method="get" action="{% url 'calendar_view' %}" onsubmit="return redirectToDate();">
+    <div class="form-group">
+        <label for="date">Select Date:</label>
+        <input type="text" id="id_date" name="date" class="form-control datepicker" value="{{ selected_date|date:"Y-m-d" }}">
+    </div>
+    <button type="submit" class="btn btn-primary">View Schedule</button>
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: '-2m',
+            endDate: '+3m'
+        });
+    });
+
+
+    function redirectToDate() {
+        const selectedDate = document.getElementById("id_date").value;
+        if (selectedDate) {
+            window.location.href = `/schedule/${selectedDate}/`;
+            return false;
+        }
+        return true;
+    }
+</script>
+
+</script>
+{% endblock %}

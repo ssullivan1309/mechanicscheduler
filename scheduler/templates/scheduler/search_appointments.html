@@ -1,0 +1,76 @@
+{% extends 'scheduler/base.html' %}
+{% load static %}
+
+{% block content %}
+    <h2>Search Appointments</h2>
+
+    <form method="get" action="" class="search-form">
+        <label>Name: <input type="text" name="name"></label>
+        <label>Phone: <input type="text" name="phone"></label>
+        <label>Vehicle Make: <input type="text" name="vehicle_make"></label>
+        <label>Model: <input type="text" name="vehicle_model"></label>
+        <label>Year: <input type="text" name="vehicle_year"></label>
+        <label>Date: <input type="date" name="date"></label>
+        <label>Time: <input type="time" name="time"></label>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if upcoming_appointments or previous_appointments %}
+        {% if upcoming_appointments %}
+            <h3>Upcoming Appointments</h3>
+            {% for appt in upcoming_appointments %}
+                <div class="search-result-box">
+                    <p><strong>{{ appt.start_time|date:"Y-m-d H:i" }}</strong> - Bay {{ appt.bay }}</p>
+                    <p><strong>Job:</strong> {% if appt.custom_job_name %}{{ appt.custom_job_name }}{% elif appt.jobs.exists %}{{ appt.jobs.first.title }}{% else %}No Job{% endif %}</p>
+                    {% if appt.customer_name %}<p><strong>Name:</strong> {{ appt.customer_name }}</p>{% endif %}
+                    {% if appt.vehicle_make or appt.vehicle_model or appt.vehicle_year %}
+                        <p><strong>Vehicle:</strong> {{ appt.vehicle_year }} {{ appt.vehicle_make }} {{ appt.vehicle_model }}</p>
+                    {% endif %}
+                    {% if appt.phone_number %}<p><strong>Phone:</strong> {{ appt.phone_number }}</p>{% endif %}
+                    {% if appt.notes %}<p><strong>Notes:</strong> {{ appt.notes }}</p>{% endif %}
+                    <a href="{% url 'daily_schedule_date' date=appt.start_time|date:'Y-m-d' %}">View Day</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if previous_appointments %}
+            <h3>Previous Appointments</h3>
+            {% for appt in previous_appointments %}
+                <div class="search-result-box">
+                    <p><strong>{{ appt.start_time|date:"Y-m-d H:i" }}</strong> - Bay {{ appt.bay }}</p>
+                    <p><strong>Job:</strong> {% if appt.custom_job_name %}{{ appt.custom_job_name }}{% elif appt.jobs.exists %}{{ appt.jobs.first.title }}{% else %}No Job{% endif %}</p>
+                    {% if appt.customer_name %}<p><strong>Name:</strong> {{ appt.customer_name }}</p>{% endif %}
+                    {% if appt.vehicle_make or appt.vehicle_model or appt.vehicle_year %}
+                        <p><strong>Vehicle:</strong> {{ appt.vehicle_year }} {{ appt.vehicle_make }} {{ appt.vehicle_model }}</p>
+                    {% endif %}
+                    {% if appt.phone_number %}<p><strong>Phone:</strong> {{ appt.phone_number }}</p>{% endif %}
+                    {% if appt.notes %}<p><strong>Notes:</strong> {{ appt.notes }}</p>{% endif %}
+                    <a href="{% url 'daily_schedule_date' date=appt.start_time|date:'Y-m-d' %}">View Day</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% elif request.GET %}
+        <p>No appointments found for the given criteria.</p>
+    {% endif %}
+
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-form label {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+        }
+        .search-result-box {
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+{% endblock %}

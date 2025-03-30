@@ -1,0 +1,261 @@
+{% extends 'scheduler/base.html' %}
+{% load static %}
+
+{% block content %}
+    <h2>Schedule for {{ day_of_week }}, {{ selected_date }}</h2>
+
+    <!-- Link to Calendar View -->
+    <div class="calendar-link">
+        <a href="{% url 'calendar_view' %}">Search Day</a>
+    </div>
+
+    <!-- Link to Add Appointment -->
+    <div class="add-appointment-link">
+        <a href="{% url 'add_appointment' %}">Add Appointment</a>
+    </div>
+
+    <!-- Link to Search Appointments -->
+    <div style="margin:10px 0;padding:10px;display:inline-block;background:#f1f1f1;border:2px solid #007bff;border-radius:5px;font-weight:bold;">
+        <a href="{% url 'search_appointments' %}" style="color:#333;font-size:16px;padding:10px 20px;text-decoration:none;">Search Appointments</a>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="{% url 'daily_schedule_date' date=previous_date|date:'Y-m-d' %}">Previous Day</a>
+        <a href="{% url 'daily_schedule_date' date=today_date|date:'Y-m-d' %}">Today</a>
+        <a href="{% url 'daily_schedule_date' date=next_date|date:'Y-m-d' %}">Next Day</a>
+    </div>
+
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Bay 1</th>
+                <th>Bay 2</th>
+                <th>Bay 3</th>
+                <th>Bay 4</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for time, row in schedule %}
+            <tr class="{% if time == '12:00 PM' %}lunch-row{% endif %}">
+                <td class="{% if time == '12:00 PM' %}no-appointment-block{% endif %}">{{ time }}</td>
+                {% for bay in row %}
+                    {% if bay == "SKIP" %}
+                        <td class="skip-cell"></td>
+                    {% else %}
+                        <td class="{% if time == '12:00 PM' %}no-appointment-block{% endif %}"
+                            {% if bay and bay.duration_hours > 1 %} rowspan="{{ bay.duration_hours|floatformat:0 }}" {% endif %}
+                            style="position: relative; vertical-align: top;">
+                            {% if bay %}
+                            <div class="appointment-box" onclick="openAppointmentModal('{{ bay.id }}', '{% if bay.custom_job_name %}{{ bay.custom_job_name }}{% elif bay.jobs.exists %}{{ bay.jobs.first.title }}{% else %}No Job{% endif %}', '{{ bay.customer_name }}', '{{ bay.vehicle_make }}', '{{ bay.vehicle_model }}', '{{ bay.vehicle_year }}', '{{ bay.phone_number }}', '{{ bay.notes }}')">
+                                <strong>{% if bay.custom_job_name %}{{ bay.custom_job_name }}{% elif bay.jobs.exists %}{{ bay.jobs.first.title }}{% else %}No Job{% endif %}</strong>
+                                {% if bay.customer_name %}<div>{{ bay.customer_name }}</div>{% endif %}
+                                {% if bay.vehicle_year or bay.vehicle_make or bay.vehicle_model %}
+                                    <div>
+                                        {% if bay.vehicle_year %}{{ bay.vehicle_year }} {% endif %}
+                                        {% if bay.vehicle_make %}{{ bay.vehicle_make }} {% endif %}
+                                        {% if bay.vehicle_model %}{{ bay.vehicle_model }}{% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                            </div>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Appointment Modal -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAppointmentModal()">&times;</span>
+            <div id="modalView">
+                <h3 id="modalJobTitle"></h3>
+                <p><strong>Customer:</strong> <span id="modalCustomer"></span></p>
+                <p><strong>Vehicle:</strong> <span id="modalVehicle"></span></p>
+                <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
+                <p><strong>Notes:</strong> <span id="modalNotes"></span></p>
+                <button id="editButton" class="edit-btn">Edit</button>
+                <button id="deleteButton" class="delete-btn">Delete</button>
+            </div>
+
+            <form id="editForm" style="display:none;">
+                <input type="hidden" id="editId">
+                <label>Job Title: <input type="text" id="editJob"></label><br>
+                <label>Customer: <input type="text" id="editCustomer"></label><br>
+                <label>Vehicle Year: <input type="text" id="editYear"></label><br>
+                <label>Make: <input type="text" id="editMake"></label>
+                <label>Model: <input type="text" id="editModel"></label><br>
+                <label>Phone: <input type="text" id="editPhone"></label><br>
+                <label>Notes: <textarea id="editNotes"></textarea></label><br>
+                <button type="button" onclick="submitEdit()">Save</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .lunch-row td {
+            height: 30px !important;
+            background-color: #f4f4f4;
+        }
+        .skip-cell {
+            display: none;
+        }
+        .appointment-box {
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            height: 100%;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .edit-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+
+    <script>
+        function getCSRFToken() {
+            let cookieValue = null;
+            let cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    cookieValue = cookie.substring(10);
+                    break;
+                }
+            }
+            return cookieValue;
+        }
+
+        function openAppointmentModal(id, job, customer, make, model, year, phone, notes) {
+            document.getElementById("modalView").style.display = "block";
+            document.getElementById("editForm").style.display = "none";
+
+            document.getElementById("modalJobTitle").innerText = job;
+            document.getElementById("modalCustomer").innerText = customer || "N/A";
+            document.getElementById("modalVehicle").innerText = year && make && model ? year + " " + make + " " + model : "N/A";
+            document.getElementById("modalPhone").innerText = phone || "N/A";
+            document.getElementById("modalNotes").innerText = notes || "No notes";
+
+            document.getElementById("editId").value = id;
+            document.getElementById("editJob").value = job;
+            document.getElementById("editCustomer").value = customer;
+            document.getElementById("editYear").value = year;
+            document.getElementById("editMake").value = make;
+            document.getElementById("editModel").value = model;
+            document.getElementById("editPhone").value = phone;
+            document.getElementById("editNotes").value = notes;
+
+            document.getElementById("deleteButton").onclick = function() {
+                if (confirm("Are you sure you want to delete this appointment?")) {
+                    fetch(`/delete/${id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCSRFToken(),
+                            "Content-Type": "application/json"
+                        }
+                    }).then(response => {
+                        if (response.ok) location.reload();
+                        else alert("Failed to delete appointment.");
+                    });
+                }
+            };
+
+            document.getElementById("editButton").onclick = function() {
+                document.getElementById("modalView").style.display = "none";
+                document.getElementById("editForm").style.display = "block";
+            };
+
+            document.getElementById("appointmentModal").style.display = "block";
+        }
+
+        function closeAppointmentModal() {
+            document.getElementById("appointmentModal").style.display = "none";
+        }
+
+        function cancelEdit() {
+            document.getElementById("editForm").style.display = "none";
+            document.getElementById("modalView").style.display = "block";
+        }
+
+        function submitEdit() {
+            const id = document.getElementById("editId").value;
+            const data = {
+                job: document.getElementById("editJob").value,
+                customer: document.getElementById("editCustomer").value,
+                year: document.getElementById("editYear").value,
+                make: document.getElementById("editMake").value,
+                model: document.getElementById("editModel").value,
+                phone: document.getElementById("editPhone").value,
+                notes: document.getElementById("editNotes").value
+            };
+
+            fetch(`/edit/${id}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCSRFToken(),
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (response.ok) location.reload();
+                else alert("Failed to save changes.");
+            });
+        }
+    </script>
+
+{% endblock %}
