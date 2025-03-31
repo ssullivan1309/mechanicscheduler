@@ -193,6 +193,7 @@ def edit_appointment(request, appointment_id):
 def search_appointments(request):
     upcoming_appointments = []
     previous_appointments = []
+    error = None
 
     if request.method == "GET" and any(param in request.GET for param in ["name", "date", "time", "phone", "vehicle_make", "vehicle_model", "vehicle_year"]):
         name = request.GET.get("name")
@@ -203,31 +204,35 @@ def search_appointments(request):
         vehicle_model = request.GET.get("vehicle_model")
         vehicle_year = request.GET.get("vehicle_year")
 
-        filters = {}
-        if name:
-            filters["customer_name__icontains"] = name
-        if phone:
-            filters["phone_number__icontains"] = phone
-        if vehicle_make:
-            filters["vehicle_make__icontains"] = vehicle_make
-        if vehicle_model:
-            filters["vehicle_model__icontains"] = vehicle_model
-        if vehicle_year:
-            filters["vehicle_year__icontains"] = vehicle_year
-        if date:
-            filters["start_time__date"] = date
-        if time and date:
-            filters["start_time__time"] = time
+        if time and not date:
+            error = "You must select a date when searching by time."
+        else:
+            filters = {}
+            if name:
+                filters["customer_name__icontains"] = name
+            if phone:
+                filters["phone_number__icontains"] = phone
+            if vehicle_make:
+                filters["vehicle_make__icontains"] = vehicle_make
+            if vehicle_model:
+                filters["vehicle_model__icontains"] = vehicle_model
+            if vehicle_year:
+                filters["vehicle_year__icontains"] = vehicle_year
+            if date:
+                filters["start_time__date"] = date
+            if time and date:
+                filters["start_time__time"] = time
 
-        all_results = Appointment.objects.filter(**filters)
+            all_results = Appointment.objects.filter(**filters)
 
-        for appt in all_results:
-            if appt.start_time >= now():
-                upcoming_appointments.append(appt)
-            else:
-                previous_appointments.append(appt)
+            for appt in all_results:
+                if appt.start_time >= now():
+                    upcoming_appointments.append(appt)
+                else:
+                    previous_appointments.append(appt)
 
     return render(request, "scheduler/search_appointments.html", {
         "upcoming_appointments": upcoming_appointments,
-        "previous_appointments": previous_appointments
+        "previous_appointments": previous_appointments,
+        "error": error
     })

@@ -47,8 +47,17 @@
                             {% if bay and bay.duration_hours > 1 %} rowspan="{{ bay.duration_hours|floatformat:0 }}" {% endif %}
                             style="position: relative; vertical-align: top;">
                             {% if bay %}
-                            <div class="appointment-box" onclick="openAppointmentModal('{{ bay.id }}', '{% if bay.custom_job_name %}{{ bay.custom_job_name }}{% elif bay.jobs.exists %}{{ bay.jobs.first.title }}{% else %}No Job{% endif %}', '{{ bay.customer_name }}', '{{ bay.vehicle_make }}', '{{ bay.vehicle_model }}', '{{ bay.vehicle_year }}', '{{ bay.phone_number }}', '{{ bay.notes }}')">
-                                <strong>{% if bay.custom_job_name %}{{ bay.custom_job_name }}{% elif bay.jobs.exists %}{{ bay.jobs.first.title }}{% else %}No Job{% endif %}</strong>
+                            <div class="appointment-box" onclick="openAppointmentModal('{{ bay.id }}', '{% if bay.custom_job_name %}{{ bay.custom_job_name }}{% elif bay.jobs.exists %}{% for job in bay.jobs.all %}{{ job.title }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}No Job{% endif %}', '{{ bay.customer_name }}', '{{ bay.vehicle_make }}', '{{ bay.vehicle_model }}', '{{ bay.vehicle_year }}', '{{ bay.phone_number }}', '{{ bay.notes }}')">
+                                <strong>{% if bay.custom_job_name %}
+                                            {{ bay.custom_job_name }}
+                                        {% elif bay.jobs.exists %}
+                                            {% for job in bay.jobs.all %}
+                                                {{ job.title }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            No Job
+                                        {% endif %}
+                                </strong>
                                 {% if bay.customer_name %}<div>{{ bay.customer_name }}</div>{% endif %}
                                 {% if bay.vehicle_year or bay.vehicle_make or bay.vehicle_model %}
                                     <div>
@@ -166,7 +175,7 @@
             margin-top: 10px;
         }
         .nav-buttons {
-            text-align: center;
+        text-align: center;
             margin-top: 20px;
         }
 
@@ -339,11 +348,15 @@
                             "Content-Type": "application/json"
                         }
                     }).then(response => {
-                        if (response.ok) location.reload();
-                        else alert("Failed to delete appointment.");
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert("Failed to delete appointment.");
+                        }
                     });
                 }
             };
+
 
             document.getElementById("editButton").onclick = function() {
                 document.getElementById("modalView").style.display = "none";
