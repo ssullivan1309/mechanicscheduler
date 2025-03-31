@@ -39,11 +39,27 @@
             </div>
         </nav>
 
+
         <div class="content">
             {% block content %}
             {% endblock %}
         </div>
     </div>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f3f5;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2rem;
+        }
+    </style>
 
     <script type="text/javascript">
         $(document).ready(function() {
